@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kalkulačka konce maturitní zkoušky</title>
+  <meta name="description" content="Jednoduchá kalkulačka pro výpočet konce maturitní zkoušky se zohledněním PUP.">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+  <style>
+    :root {
+      --page-bg: linear-gradient(135deg, #f4efe6 0%, #d9e9f2 100%);
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --accent: #0f6b5f;
+      --accent-dark: #0b5148;
+      --text-soft: #5a6470;
+      --border-soft: rgba(15, 107, 95, 0.12);
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--page-bg);
+      color: #1f2933;
+    }
+
+    .page-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 2rem 0;
+    }
+
+    .calculator-card,
+    .result-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-soft);
+      border-radius: 1.5rem;
+      box-shadow: 0 1.25rem 3rem rgba(31, 41, 51, 0.08);
+      backdrop-filter: blur(10px);
+    }
+
+    .section-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .result-time {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--accent-dark);
+    }
+
+    .radio-card {
+      border: 1px solid rgba(31, 41, 51, 0.12);
+      border-radius: 1rem;
+      padding: 0.9rem 1rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+      cursor: pointer;
+    }
+
+    .radio-card:hover {
+      border-color: rgba(15, 107, 95, 0.4);
+      box-shadow: 0 0.5rem 1.25rem rgba(15, 107, 95, 0.08);
+    }
+
+    .form-check-input:checked + .form-check-label .radio-card {
+      border-color: var(--accent);
+      background: rgba(15, 107, 95, 0.06);
+      box-shadow: 0 0.75rem 1.5rem rgba(15, 107, 95, 0.12);
+    }
+
+    .breakdown-table td {
+      padding-top: 0.75rem;
+      padding-bottom: 0.75rem;
+    }
+
+    .breakdown-table td:last-child {
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .note-box {
+      background: rgba(15, 107, 95, 0.08);
+      border: 1px solid rgba(15, 107, 95, 0.12);
+      border-radius: 1rem;
+    }
+
+    @media (max-width: 767.98px) {
+      .page-wrap {
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-wrap">
+    <div class="container">
+      <div class="row g-4 justify-content-center">
+        <div class="col-12 col-lg-6">
+          <section class="calculator-card p-4 p-md-5 h-100">
+            <p class="section-label mb-2">Maturita</p>
+            <h1 class="display-6 fw-bold mb-3">Kalkulačka konce zkoušky</h1>
+            <p class="text-secondary mb-4">
+              Spočítá konec praktické nebo dlouhé maturitní části podle začátku, základního času a navýšení PUP.
+            </p>
+
+            <form id="calculatorForm" novalidate>
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <label for="startTime" class="form-label fw-semibold">Začátek</label>
+                  <input id="startTime" name="startTime" type="time" class="form-control form-control-lg" value="07:55" required>
+                </div>
+                <div class="col-12 col-md-6">
+                  <label for="baseDuration" class="form-label fw-semibold">Základní čas (minuty)</label>
+                  <input id="baseDuration" name="baseDuration" type="number" class="form-control form-control-lg" value="390" min="1" step="1" required>
+                </div>
+              </div>
+
+              <fieldset class="mt-4">
+                <legend class="form-label fw-semibold mb-3">Podpora / PUP</legend>
+                <div class="row g-3">
+                  <div class="col-12 col-sm-6">
+                    <div class="form-check p-0">
+                      <input class="form-check-input visually-hidden" type="radio" name="multiplier" id="multiplier100" value="1" checked>
+                      <label class="form-check-label d-block" for="multiplier100">
+                        <div class="radio-card">
+                          <div class="fw-semibold">Intaktní žák</div>
+                          <div class="text-secondary">Koeficient 1.00</div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <div class="form-check p-0">
+                      <input class="form-check-input visually-hidden" type="radio" name="multiplier" id="multiplier125" value="1.25">
+                      <label class="form-check-label d-block" for="multiplier125">
+                        <div class="radio-card">
+                          <div class="fw-semibold">PUP 25 %</div>
+                          <div class="text-secondary">Koeficient 1.25</div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <div class="form-check p-0">
+                      <input class="form-check-input visually-hidden" type="radio" name="multiplier" id="multiplier150" value="1.5">
+                      <label class="form-check-label d-block" for="multiplier150">
+                        <div class="radio-card">
+                          <div class="fw-semibold">PUP 50 %</div>
+                          <div class="text-secondary">Koeficient 1.50</div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <div class="form-check p-0">
+                      <input class="form-check-input visually-hidden" type="radio" name="multiplier" id="multiplier200" value="2">
+                      <label class="form-check-label d-block" for="multiplier200">
+                        <div class="radio-card">
+                          <div class="fw-semibold">PUP 100 %</div>
+                          <div class="text-secondary">Koeficient 2.00</div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+
+              <div class="d-grid d-sm-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success btn-lg px-4">Spočítat</button>
+                <button type="button" id="resetButton" class="btn btn-outline-secondary btn-lg px-4">Obnovit výchozí hodnoty</button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <div class="col-12 col-lg-6">
+          <section class="result-card p-4 p-md-5 h-100">
+            <p class="section-label mb-2">Výsledek</p>
+            <div id="alertBox" class="alert alert-danger d-none" role="alert"></div>
+
+            <div id="resultContent">
+              <h2 class="h5 text-secondary mb-2">Konec zkoušky</h2>
+              <div id="resultTime" class="result-time mb-3">14:25</div>
+              <p id="resultDescription" class="text-secondary mb-4">
+                Pro intaktního žáka nebo PUP 25 % se zobrazuje jeden koncový čas.
+              </p>
+
+              <div class="note-box p-3 mb-4">
+                <div class="fw-semibold mb-1">Pravidlo dělení do dvou dnů</div>
+                <div class="small text-secondary">
+                  U PUP 50 % a PUP 100 % se výstup rozdělí na konec 1. dne a konec 2. dne s označením <strong>+1 den</strong>.
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table align-middle breakdown-table mb-0">
+                  <tbody>
+                    <tr>
+                      <td>základní čas</td>
+                      <td id="baseTimeValue">390 min (6 h 30 min)</td>
+                    </tr>
+                    <tr>
+                      <td>navýšení</td>
+                      <td id="extraTimeValue">0 min (0 h 0 min)</td>
+                    </tr>
+                    <tr>
+                      <td>zaokrouhlené navýšení</td>
+                      <td id="roundedExtraValue">0 min (0 h 0 min)</td>
+                    </tr>
+                    <tr>
+                      <td>celkový čas</td>
+                      <td id="totalTimeValue">390 min (6 h 30 min)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function parseTime(value) {
+      if (typeof value !== "string" || !/^\d{2}:\d{2}$/.test(value)) {
+        return null;
+      }
+
+      const [hoursText, minutesText] = value.split(":");
+      const hours = Number(hoursText);
+      const minutes = Number(minutesText);
+
+      if (!Number.isInteger(hours) || !Number.isInteger(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        return null;
+      }
+
+      return (hours * 60) + minutes;
+    }
+
+    function addMinutesToTime(startMinutes, minutesToAdd) {
+      const minutesInDay = 24 * 60;
+      const totalMinutes = ((startMinutes + minutesToAdd) % minutesInDay + minutesInDay) % minutesInDay;
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    }
+
+    function roundToNearestFive(value) {
+      return Math.round(value / 5) * 5;
+    }
+
+    function formatMinutes(totalMinutes) {
+      if (!Number.isFinite(totalMinutes)) {
+        return "Neplatná hodnota";
+      }
+
+      if (!Number.isInteger(totalMinutes)) {
+        return `${totalMinutes.toLocaleString("cs-CZ", { maximumFractionDigits: 2 })} min`;
+      }
+
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return `${totalMinutes} min (${hours} h ${minutes} min)`;
+    }
+
+    function calculate() {
+      const startTimeInput = document.getElementById("startTime");
+      const baseDurationInput = document.getElementById("baseDuration");
+      const multiplierInput = document.querySelector('input[name="multiplier"]:checked');
+      const alertBox = document.getElementById("alertBox");
+      const resultTime = document.getElementById("resultTime");
+      const resultDescription = document.getElementById("resultDescription");
+
+      alertBox.classList.add("d-none");
+      alertBox.textContent = "";
+
+      const startMinutes = parseTime(startTimeInput.value);
+      const baseDuration = Number(baseDurationInput.value);
+      const multiplier = multiplierInput ? Number(multiplierInput.value) : NaN;
+
+      if (startMinutes === null) {
+        alertBox.textContent = "Zadejte platný čas začátku ve formátu HH:MM.";
+        alertBox.classList.remove("d-none");
+        resultTime.textContent = "Neplatný vstup";
+        resultDescription.textContent = "Opravte čas začátku a výpočet se znovu provede.";
+        return;
+      }
+
+      if (!Number.isInteger(baseDuration) || baseDuration <= 0) {
+        alertBox.textContent = "Základní čas musí být kladné celé číslo v minutách.";
+        alertBox.classList.remove("d-none");
+        resultTime.textContent = "Neplatný vstup";
+        resultDescription.textContent = "Opravte délku zkoušky a výpočet se znovu provede.";
+        return;
+      }
+
+      if (![1, 1.25, 1.5, 2].includes(multiplier)) {
+        alertBox.textContent = "Vyberte platnou variantu podpory nebo PUP.";
+        alertBox.classList.remove("d-none");
+        resultTime.textContent = "Neplatný vstup";
+        resultDescription.textContent = "Vyberte podporu a výpočet se znovu provede.";
+        return;
+      }
+
+      const extraTime = baseDuration * (multiplier - 1);
+      const roundedExtra = roundToNearestFive(extraTime);
+      const totalTime = baseDuration + roundedExtra;
+
+      document.getElementById("baseTimeValue").textContent = formatMinutes(baseDuration);
+      document.getElementById("extraTimeValue").textContent = formatMinutes(extraTime);
+      document.getElementById("roundedExtraValue").textContent = formatMinutes(roundedExtra);
+      document.getElementById("totalTimeValue").textContent = formatMinutes(totalTime);
+
+      if (multiplier === 1 || multiplier === 1.25) {
+        resultTime.textContent = addMinutesToTime(startMinutes, totalTime);
+        resultDescription.textContent = "Výsledek je jeden koncový čas počítaný od začátku zkoušky.";
+        return;
+      }
+
+      const dayOneEnd = addMinutesToTime(startMinutes, baseDuration);
+      const dayTwoEnd = addMinutesToTime(startMinutes, roundedExtra);
+      resultTime.textContent = `${dayOneEnd} / ${dayTwoEnd} (+1 den)`;
+      resultDescription.textContent = "První čas je konec 1. dne, druhý čas je konec 2. dne po přesunu navýšení na další den.";
+    }
+
+    document.getElementById("calculatorForm").addEventListener("submit", function (event) {
+      event.preventDefault();
+      calculate();
+    });
+
+    document.getElementById("resetButton").addEventListener("click", function () {
+      document.getElementById("startTime").value = "07:55";
+      document.getElementById("baseDuration").value = "390";
+      document.getElementById("multiplier100").checked = true;
+      calculate();
+    });
+
+    document.getElementById("calculatorForm").addEventListener("input", calculate);
+    document.getElementById("calculatorForm").addEventListener("change", calculate);
+
+    calculate();
+  </script>
+</body>
+</html>
