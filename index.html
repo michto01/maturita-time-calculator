@@ -169,6 +169,16 @@
                 </div>
               </fieldset>
 
+              <div class="form-check form-switch mt-4">
+                <input class="form-check-input" type="checkbox" role="switch" id="splitDays">
+                <label class="form-check-label" for="splitDays">
+                  Rozdělit navýšení do 2. dne
+                </label>
+                <div class="form-text">
+                  Vhodné pro dlouhé zkoušky. Pokud je vypnuto, zobrazí se vždy jeden souvislý koncový čas.
+                </div>
+              </div>
+
               <div class="d-grid d-sm-flex gap-2 mt-4">
                 <button type="submit" class="btn btn-success btn-lg px-4">Spočítat</button>
                 <button type="button" id="resetButton" class="btn btn-outline-secondary btn-lg px-4">Obnovit výchozí hodnoty</button>
@@ -186,13 +196,13 @@
               <h2 class="h5 text-secondary mb-2">Konec zkoušky</h2>
               <div id="resultTime" class="result-time mb-3">14:25</div>
               <p id="resultDescription" class="text-secondary mb-4">
-                Pro intaktního žáka nebo PUP 25 % se zobrazuje jeden koncový čas.
+                Ve výchozím stavu se zobrazuje jeden koncový čas od začátku zkoušky.
               </p>
 
               <div class="note-box p-3 mb-4">
-                <div class="fw-semibold mb-1">Pravidlo dělení do dvou dnů</div>
+                <div class="fw-semibold mb-1">Volitelné dělení do dvou dnů</div>
                 <div class="small text-secondary">
-                  U PUP 50 % a PUP 100 % se výstup rozdělí na konec 1. dne a konec 2. dne s označením <strong>+1 den</strong>.
+                  Pokud zapnete přepínač, u variant s navýšením se výstup rozdělí na konec 1. dne a konec 2. dne s označením <strong>+1 den</strong>.
                 </div>
               </div>
 
@@ -272,6 +282,7 @@
     function calculate() {
       const startTimeInput = document.getElementById("startTime");
       const baseDurationInput = document.getElementById("baseDuration");
+      const splitDaysInput = document.getElementById("splitDays");
       const multiplierInput = document.querySelector('input[name="multiplier"]:checked');
       const alertBox = document.getElementById("alertBox");
       const resultTime = document.getElementById("resultTime");
@@ -282,6 +293,7 @@
 
       const startMinutes = parseTime(startTimeInput.value);
       const baseDuration = Number(baseDurationInput.value);
+      const splitDays = splitDaysInput.checked;
       const multiplier = multiplierInput ? Number(multiplierInput.value) : NaN;
 
       if (startMinutes === null) {
@@ -317,7 +329,7 @@
       document.getElementById("roundedExtraValue").textContent = formatMinutes(roundedExtra);
       document.getElementById("totalTimeValue").textContent = formatMinutes(totalTime);
 
-      if (multiplier === 1 || multiplier === 1.25) {
+      if (!splitDays || roundedExtra === 0) {
         resultTime.textContent = addMinutesToTime(startMinutes, totalTime);
         resultDescription.textContent = "Výsledek je jeden koncový čas počítaný od začátku zkoušky.";
         return;
@@ -338,6 +350,7 @@
       document.getElementById("startTime").value = "07:55";
       document.getElementById("baseDuration").value = "390";
       document.getElementById("multiplier100").checked = true;
+      document.getElementById("splitDays").checked = false;
       calculate();
     });
 
