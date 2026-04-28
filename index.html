@@ -179,6 +179,14 @@
                 </div>
               </div>
 
+              <div class="mt-3">
+                <label for="splitThreshold" class="form-label fw-semibold">Rozdělit až od délky (minuty)</label>
+                <input id="splitThreshold" name="splitThreshold" type="number" class="form-control" value="480" min="1" step="1">
+                <div class="form-text">
+                  Pokud se celkový čas vejde do tohoto limitu, dělení se ignoruje i při zapnutém přepínači.
+                </div>
+              </div>
+
               <div class="d-grid d-sm-flex gap-2 mt-4">
                 <button type="submit" class="btn btn-success btn-lg px-4">Spočítat</button>
                 <button type="button" id="resetButton" class="btn btn-outline-secondary btn-lg px-4">Obnovit výchozí hodnoty</button>
@@ -202,7 +210,7 @@
               <div class="note-box p-3 mb-4">
                 <div class="fw-semibold mb-1">Volitelné dělení do dvou dnů</div>
                 <div class="small text-secondary">
-                  Pokud zapnete přepínač, u variant s navýšením se výstup rozdělí na konec 1. dne a konec 2. dne s označením <strong>+1 den</strong>.
+                  Pokud zapnete přepínač, k rozdělení dojde jen tehdy, když celkový čas překročí nastavený limit jednoho dne.
                 </div>
               </div>
 
@@ -283,6 +291,7 @@
       const startTimeInput = document.getElementById("startTime");
       const baseDurationInput = document.getElementById("baseDuration");
       const splitDaysInput = document.getElementById("splitDays");
+      const splitThresholdInput = document.getElementById("splitThreshold");
       const multiplierInput = document.querySelector('input[name="multiplier"]:checked');
       const alertBox = document.getElementById("alertBox");
       const resultTime = document.getElementById("resultTime");
@@ -294,6 +303,7 @@
       const startMinutes = parseTime(startTimeInput.value);
       const baseDuration = Number(baseDurationInput.value);
       const splitDays = splitDaysInput.checked;
+      const splitThreshold = Number(splitThresholdInput.value);
       const multiplier = multiplierInput ? Number(multiplierInput.value) : NaN;
 
       if (startMinutes === null) {
@@ -320,17 +330,31 @@
         return;
       }
 
+      if (!Number.isInteger(splitThreshold) || splitThreshold <= 0) {
+        alertBox.textContent = "Limit pro rozdělení musí být kladné celé číslo v minutách.";
+        alertBox.classList.remove("d-none");
+        resultTime.textContent = "Neplatný vstup";
+        resultDescription.textContent = "Opravte limit pro rozdělení a výpočet se znovu provede.";
+        return;
+      }
+
       const extraTime = baseDuration * (multiplier - 1);
       const roundedExtra = roundToNearestFive(extraTime);
       const totalTime = baseDuration + roundedExtra;
+      const shouldSplit = splitDays && roundedExtra > 0 && totalTime > splitThreshold;
 
       document.getElementById("baseTimeValue").textContent = formatMinutes(baseDuration);
       document.getElementById("extraTimeValue").textContent = formatMinutes(extraTime);
       document.getElementById("roundedExtraValue").textContent = formatMinutes(roundedExtra);
       document.getElementById("totalTimeValue").textContent = formatMinutes(totalTime);
 
-      if (!splitDays || roundedExtra === 0) {
+      if (!shouldSplit) {
         resultTime.textContent = addMinutesToTime(startMinutes, totalTime);
+        if (splitDays && roundedExtra > 0 && totalTime <= splitThreshold) {
+          resultDescription.textContent = "Celkový čas se vejde do nastaveného limitu jednoho dne, proto se dělení nepoužije.";
+          return;
+        }
+
         resultDescription.textContent = "Výsledek je jeden koncový čas počítaný od začátku zkoušky.";
         return;
       }
@@ -351,6 +375,7 @@
       document.getElementById("baseDuration").value = "390";
       document.getElementById("multiplier100").checked = true;
       document.getElementById("splitDays").checked = false;
+      document.getElementById("splitThreshold").value = "480";
       calculate();
     });
 
